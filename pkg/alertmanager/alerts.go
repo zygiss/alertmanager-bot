@@ -51,11 +51,22 @@ func AlertMessage(a types.Alert) string {
 		)
 	}
 
+	var formattedLabels string
+	alertName := a.Labels["alertname"]
+	for k, v := range a.Labels {
+		formattedLabels = formattedLabels + fmt.Sprintf(
+			"%s: %s\n",
+			k,
+			escape(v),
+		)
+	}
+
 	return fmt.Sprintf(
-		"%s\n*%s* (%s)\n%s\n%s\n",
+		"%s\n*%s* - %s\n%s\n%s\n%s",
 		status,
-		escape(a.Labels["alertname"]),
+		alertName,
 		escape(a.Annotations["summary"]),
+		formattedLabels,
 		escape(a.Annotations["description"]),
 		duration,
 	)
