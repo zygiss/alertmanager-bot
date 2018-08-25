@@ -16,8 +16,8 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/joho/godotenv"
-	"github.com/metalmatze/alertmanager-bot/pkg/telegram"
 	"github.com/oklog/run"
+	"github.com/zygiss/alertmanager-bot/pkg/telegram"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -54,6 +54,7 @@ func main() {
 		listenAddr     string
 		logLevel       string
 		logJSON        bool
+		sendLabels     bool
 		store          string
 		telegramAdmins []int
 		telegramToken  string
@@ -88,6 +89,10 @@ func main() {
 		Envar("LOG_LEVEL").
 		Default(levelInfo).
 		EnumVar(&config.logLevel, levelError, levelWarn, levelInfo, levelDebug)
+
+	a.Flag("send.labels", "Whether to include labels in the alert message").
+		Envar("SEND_LABELS").
+		BoolVar(&config.sendLabels)
 
 	a.Flag("store", "The store to use").
 		Required().

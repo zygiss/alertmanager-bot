@@ -38,6 +38,7 @@ func ListAlerts(logger log.Logger, alertmanagerURL string) ([]types.Alert, error
 // AlertMessage converts an alert to a message string
 func AlertMessage(a types.Alert) string {
 	var status, duration string
+	var formattedAnnotations, formattedLabels string
 	switch a.Status() {
 	case model.AlertFiring:
 		status = fmt.Sprintf("🔥 *%s* 🔥", strings.ToUpper(string(a.Status())))
@@ -51,23 +52,29 @@ func AlertMessage(a types.Alert) string {
 		)
 	}
 
-	var formattedLabels string
+	summary := a.Annotations["summary"]
+	delete(a.Annotations, "summary")
+	for k, v := range a.Annotations {
+		formattedAnnotations = formattedAnnotations + fmt.Sprintf(
+			"%s: %s\n", k, escape(v),
+		)
+	}
+
 	alertName := a.Labels["alertname"]
+	delete(a.Labels, "alertname")
 	for k, v := range a.Labels {
 		formattedLabels = formattedLabels + fmt.Sprintf(
-			"%s: %s\n",
-			k,
-			escape(v),
+			"%s: %s\n", k, escape(v),
 		)
 	}
 
 	return fmt.Sprintf(
-		"%s\n*%s* - %s\n%s\n%s\n%s",
+		"%s *%s*\n%s\n\n%s%s\n%s\n",
 		status,
 		alertName,
-		escape(a.Annotations["summary"]),
+		summary,
 		formattedLabels,
-		escape(a.Annotations["description"]),
+		formattedAnnotations,
 		duration,
 	)
 }
